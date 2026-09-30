@@ -29,9 +29,59 @@
 using namespace std;
 
 // ==================== 在此处编写 Enemy和Target 类 ====================
+class Enemy
+{
+private:
+    char id; // 兵种ID
+    double x; // x坐标
+    double y; // y坐标 
+public:
+    Enemy(char id, double x, double y);
+    char getId() const;
+    double getX() const;
+    double getY() const;
+};
 
+Enemy::Enemy(char id, double x, double y) : id(id), x(x), y(y) {}
 
+char Enemy::getId() const {
+    return id;
+}
 
+double Enemy::getX() const {
+    return x;
+}
+
+double Enemy::getY() const {
+    return y;
+}
+
+class Target
+{
+private:
+    Enemy enemies[4]; 
+public:
+    Target();
+    ~Target();
+    void setEnemy(int index, char id, double x, double y);
+    char getBestTarget() const;
+};
+
+void Target::setEnemy(int index, char id, double x, double y) {
+    enemies[index] = Enemy(id, x, y);
+}
+char Target::getBestTarget() const {
+    double minDistance = INFINITY;
+    char bestId = '\0';
+    for (int i = 0; i < 4; i++) {
+        double distance = sqrt(pow(enemies[i].getX(), 2) + pow(enemies[i].getY(), 2));
+        if (distance < minDistance) {
+            minDistance = distance;
+            bestId = enemies[i].getId();
+        }
+    }
+    return bestId;
+}
 // ====================================================================
 
 
@@ -45,10 +95,10 @@ int main() {
         cin >> id >> x >> y;
 
         //在此处调用你的Enemy的设置函数，传入id,x,y
-        
+        target.setEnemy(i, id, x, y);
     }
 
     // 调用查找并输出最佳目标
-
+    cout << target.getBestTarget() << endl;
     return 0;
 }

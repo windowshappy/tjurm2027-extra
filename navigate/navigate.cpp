@@ -1,9 +1,5 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <cstring> 
-#include <queue>
-#include <utility>
+#include <bits/stdc++.h>
+using namespace std;
 
 /*
  	现在你有一个类MAP_BASE，请编写他的子类，继承于MAP_BASE
@@ -86,5 +82,121 @@ class MAP_BASE
 * (2) 搜索算法。
 */
 
-//IMPLEMENT YOUR CODE HERE
+class MAP_ROBOT : public MAP_BASE
+{
+private:
+    //四向偏移：上下左右
+    const int dx[4] = {-1, 1, 0, 0};
+    const int dy[4] = {0, 0, -1, 1};
+
+    //回溯路径，把路径标记C
+    void markPath(vector<vector<char>>& grid, pair<int,int> pre[100][100], int ex, int ey)
+    {
+        int x = ex;
+        int y = ey;
+        while(!(x == -1 && y == -1))
+        {
+            grid[x][y] = 'C';
+            auto p = pre[x][y];
+            x = p.first;
+            y = p.second;
+        }
+    }
+
+    //把vector<vector<char>>转回vector<string>用于print输出
+    vector<string> gridToString(const vector<vector<char>>& grid)
+    {
+        vector<string> res;
+        for(auto &row : grid)
+        {
+            res.emplace_back(row.begin(), row.end());
+        }
+        return res;
+    }
+
+public:
+
+    bool isSafe3x3(const vector<vector<char>>& grid, int x, int y, int rows, int cols)
+    {
+        //中心(x,y)，3x3范围 x‑1~x+1，y‑1~y+1，不能越界
+        if(x-1 <0 || x+1 >= rows || y-1 <0 || y+1 >= cols)
+            return false;
+        for(int i = -1; i <= 1; i++)
+        {
+            for(int j = -1; j <=1; j++)
+            {
+                int cx = x+i;
+                int cy = y+j;
+                if(grid[cx][cy] != '.')
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    void findSafe3x3Path()
+    {
+        int rows = map_in.size();
+        int cols = map_in[0].size();
+        vector<vector<char>> grid;
+        for(auto &s : map_in)
+        {
+            grid.emplace_back(s.begin(), s.end());
+        }
+
+        pair<int,int> pre[100][100];
+        memset(visit,0,sizeof(visit));
+        queue<pair<int,int>> q;
+		// 起点和终点坐标
+        int sx = 2, sy = 2;
+        int ex = rows - 3;
+        int ey = cols - 3;
+
+        q.push({sx, sy});
+        visit[sx][sy] = true;
+        pre[sx][sy] = {-1,-1};
+        bool reach = false;
+
+        while(!q.empty())
+        {
+            auto cur = q.front();
+            q.pop();
+            int x = cur.first;
+            int y = cur.second;
+
+            if(x == ex && y == ey)
+            {
+                reach = true;
+                break;
+            }
+            for(int i=0;i<4;i++)
+            {
+                int nx = x + dx[i];
+                int ny = y + dy[i];
+   
+                if(nx>=0 && nx<rows && ny>=0 && ny<cols && !visit[nx][ny] && isSafe3x3(grid, nx, ny, rows, cols))
+                {
+                    visit[nx][ny] = true;
+                    pre[nx][ny] = {x,y};
+                    q.push({nx, ny});
+                }
+            }
+        }
+        if(reach)
+        {
+            markPath(grid, pre, ex, ey);
+            vector<string> out = gridToString(grid);
+            print(out);
+        }
+    }
+};
+
+
+
+int main()
+{
+    MAP_ROBOT robot;
+    robot.findSafe3x3Path();
+    return 0;
+}
 
